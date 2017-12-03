@@ -1,8 +1,10 @@
-[<img src="https://img.shields.io/travis/playframework/play-scala-starter-example.svg"/>](https://travis-ci.org/playframework/play-scala-starter-example)
-
-# play-scala-starter-example
-
-This is a starter application that shows how Play works.  Please see the documentation at https://www.playframework.com/documentation/latest/Home for more details.
+# battleship in scala
+“Battleship is known worldwide as a pencil and paper game which dates from World War I. It was
+published by various companies as a pad-and-pencil game in the 1930s, and was released as a plastic
+board game by Milton Bradley in 1967. The game has spawned electronic versions, video games, smart
+device apps and a film.”
+In our simplified version of battleship, a board can be thought of as a grid of potentially attacked
+positions along with one or more ships each of which occupy one or more positions.
 
 ## Running
 
@@ -12,46 +14,24 @@ Run this using [sbt](http://www.scala-sbt.org/).  If you downloaded this project
 sbt run
 ```
 
-And then go to http://localhost:9000 to see the running web application.
-
-There are several demonstration files available in this template.
+at that point the webapp is running at http://localhost:9000 
 
 ## Controllers
 
-- HomeController.scala:
+- BoardController.scala:
 
-  Shows how to handle simple HTTP requests.
+  the game board
 
-- AsyncController.scala:
+## Routes - all routes relative to http://localhost:9000, and all coordinates use inverse cartesian (0,0 is top left corner)
 
-  Shows how to do asynchronous programming when handling a request.
+- GET /printBoard:
+  prints the board
 
-- CountController.scala:
+- GET /attack/:x/:y
+  attack at coord (x,y)
 
-  Shows how to inject a component into a controller and use the component when
-  handling requests.
+- GET /addShip/:size/:startX/:startY/:vertical
+  add a ship of the given size, at the given position.  vertical ships go down from there, horizontal go right.
 
-## Components
-
-- Module.scala:
-
-  Shows how to use Guice to bind all the components needed by your application.
-
-- Counter.scala:
-
-  An example of a component that contains state, in this case a simple counter.
-
-- ApplicationTimer.scala:
-
-  An example of a component that starts when the application starts and stops
-  when the application stops.
-
-## Filters
-
-- Filters.scala:
-
-  Creates the list of HTTP filters used by your application.
-
-- ExampleFilter.scala
-
-  A simple filter that adds a header to every response.
+- GET /clearBoard
+  clear the board for a new game
