@@ -10,37 +10,117 @@ import play.api.test.Helpers._
  */
 class FunctionalSpec extends PlaySpec with GuiceOneAppPerSuite {
 
-  "Routes" should {
+    "BoardController" should {
 
-    "send 404 on a bad request" in  {
-      route(app, FakeRequest(GET, "/boum")).map(status(_)) mustBe Some(NOT_FOUND)
+      "start with empty board" in {
+        val board = route(app, FakeRequest(GET, "/printBoard")).get
+        val emptyBoard: String =
+          """O O O O O O O O O O
+            |O O O O O O O O O O
+            |O O O O O O O O O O
+            |O O O O O O O O O O
+            |O O O O O O O O O O
+            |O O O O O O O O O O
+            |O O O O O O O O O O
+            |O O O O O O O O O O
+            |O O O O O O O O O O
+            |O O O O O O O O O O""".stripMargin
+
+        status(board) mustBe Status.OK
+        contentType(board) mustBe Some("text/plain")
+        contentAsString(board) mustBe (emptyBoard)
+      }
+
+      "place two ships, and attack" in {
+        val hit = "\"Hit\""
+        val miss = "\"Miss\""
+        val sunk = "\"Sunk\""
+        val already_taken = "\"Already_Taken\""
+        val win = "\"Win\""
+
+        var ship = route(app, FakeRequest(GET, "/addShip/2/0/0/true")).get
+        status(ship) mustBe Status.OK
+        contentType(ship) mustBe Some("text/plain")
+        contentAsString(ship) mustBe ("There are now 1 ships")
+
+        ship = route(app, FakeRequest(GET, "/addShip/3/2/2/false")).get
+        status(ship) mustBe Status.OK
+        contentType(ship) mustBe Some("text/plain")
+        contentAsString(ship) mustBe ("There are now 2 ships")
+
+        var board = route(app, FakeRequest(GET, "/printBoard")).get
+        var boardString: String =
+          """S O O O O O O O O O
+            |S O O O O O O O O O
+            |O O S S S O O O O O
+            |O O O O O O O O O O
+            |O O O O O O O O O O
+            |O O O O O O O O O O
+            |O O O O O O O O O O
+            |O O O O O O O O O O
+            |O O O O O O O O O O
+            |O O O O O O O O O O""".stripMargin
+
+        status(board) mustBe Status.OK
+        contentType(board) mustBe Some("text/plain")
+        contentAsString(board) mustBe (boardString)
+
+        var attack = route(app, FakeRequest(GET, "/attack/0/0")).get
+        status(attack) mustBe Status.OK
+        contentType(attack) mustBe Some("application/json")
+        contentAsString(attack) mustBe (hit)
+
+        attack = route(app, FakeRequest(GET, "/attack/0/0")).get
+        status(attack) mustBe Status.OK
+        contentType(attack) mustBe Some("application/json")
+        contentAsString(attack) mustBe (already_taken)
+
+        attack = route(app, FakeRequest(GET, "/attack/9/9")).get
+        status(attack) mustBe Status.OK
+        contentType(attack) mustBe Some("application/json")
+        contentAsString(attack) mustBe (miss)
+
+        attack = route(app, FakeRequest(GET, "/attack/9/9")).get
+        status(attack) mustBe Status.OK
+        contentType(attack) mustBe Some("application/json")
+        contentAsString(attack) mustBe (already_taken)
+
+        attack = route(app, FakeRequest(GET, "/attack/0/1")).get
+        status(attack) mustBe Status.OK
+        contentType(attack) mustBe Some("application/json")
+        contentAsString(attack) mustBe (sunk)
+
+        attack = route(app, FakeRequest(GET, "/attack/2/2")).get
+        status(attack) mustBe Status.OK
+        contentType(attack) mustBe Some("application/json")
+        contentAsString(attack) mustBe (hit)
+
+        attack = route(app, FakeRequest(GET, "/attack/4/2")).get
+        status(attack) mustBe Status.OK
+        contentType(attack) mustBe Some("application/json")
+        contentAsString(attack) mustBe (hit)
+
+        attack = route(app, FakeRequest(GET, "/attack/3/2")).get
+        status(attack) mustBe Status.OK
+        contentType(attack) mustBe Some("application/json")
+        contentAsString(attack) mustBe (win)
+
+        boardString =
+        """X O O O O O O O O O
+          |X O O O O O O O O O
+          |O O X X X O O O O O
+          |O O O O O O O O O O
+          |O O O O O O O O O O
+          |O O O O O O O O O O
+          |O O O O O O O O O O
+          |O O O O O O O O O O
+          |O O O O O O O O O O
+          |O O O O O O O O O X""".stripMargin
+
+        board = route(app, FakeRequest(GET, "/printBoard")).get
+        status(board) mustBe Status.OK
+        contentType(board) mustBe Some("text/plain")
+        contentAsString(board) mustBe (boardString)
+      }
     }
-
-    "send 200 on a good request" in  {
-      route(app, FakeRequest(GET, "/")).map(status(_)) mustBe Some(OK)
-    }
-
-  }
-
-  "HomeController" should {
-
-    "render the index page" in {
-      val home = route(app, FakeRequest(GET, "/")).get
-
-      status(home) mustBe Status.OK
-      contentType(home) mustBe Some("text/html")
-      contentAsString(home) must include ("Your new application is ready.")
-    }
-
-  }
-
-  "CountController" should {
-
-    "return an increasing count" in {
-      contentAsString(route(app, FakeRequest(GET, "/count")).get) mustBe "0"
-      contentAsString(route(app, FakeRequest(GET, "/count")).get) mustBe "1"
-      contentAsString(route(app, FakeRequest(GET, "/count")).get) mustBe "2"
-    }
-
-  }
 }

@@ -14,6 +14,7 @@ class BoardController @Inject()(cc: ControllerComponents) extends AbstractContro
   }
 
   //each ship needs only to keep track of how big it is and how many times it has been hit
+  //since shotsTaken already guarantees that no coordinate can be hit twice
   class Ship(size: Int) {
     var health = size
 
@@ -23,6 +24,8 @@ class BoardController @Inject()(cc: ControllerComponents) extends AbstractContro
     }
   }
 
+  //currently only using this for the pretty printer
+  final val DIMENSION: Int = 10
   var numShips: Int = 0
 
   //Set of coordinates that have already been shot at
@@ -35,11 +38,10 @@ class BoardController @Inject()(cc: ControllerComponents) extends AbstractContro
   def addShip(size: Int, startX: Int, startY: Int, vertical: Boolean) = Action {
     numShips = numShips + 1
     val ship = new Ship(size)
-    if(vertical)
-      for(i <- 0 until size)
+    for(i <- 0 until size)
+      if(vertical)
         shipLocations += ((startX, startY + i) -> ship)
-    else
-      for(i <- 0 until size )
+      else
         shipLocations += ((startX + i, startY) -> ship)
     Ok(s"There are now $numShips ships")
   }
@@ -51,6 +53,27 @@ class BoardController @Inject()(cc: ControllerComponents) extends AbstractContro
     Ok(Json.toJson("Board cleared"))
   }
 
+
+  override def toString(): String = {
+    var result = ""
+    for(i <- 0 until this.DIMENSION) {
+      for(j <- 0 until this.DIMENSION) {
+        if(shotsTaken contains (j,i))
+          result += "X"
+        else if (shipLocations contains (j,i))
+          result += "S"
+        else
+          result += "O"
+        if(j < (DIMENSION - 1)) result += " "
+      }
+      if(i < (DIMENSION - 1)) result += "\n"
+    }
+    return result
+  }
+
+  //
+  def printBoard() = Action {Ok(this.toString())}
+
   def attack(x: Int, y: Int) = Action {
     if (shotsTaken contains (x, y)) {
       Ok(Json.toJson(StrikeResult.Already_Taken))
@@ -60,7 +83,7 @@ class BoardController @Inject()(cc: ControllerComponents) extends AbstractContro
       shipLocations.get(x,y) match {
          case Some(ship) => {
            if(ship.strike()) { //sunk that ship
-             numShips = numShips - 1
+             numShips -= 1
              if (numShips == 0)
                Ok(Json.toJson(StrikeResult.Win))
              else
