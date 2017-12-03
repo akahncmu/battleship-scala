@@ -53,7 +53,7 @@ class BoardController @Inject()(cc: ControllerComponents) extends AbstractContro
     Ok(Json.toJson("Board cleared"))
   }
 
-
+  //O is empty, X means a shot has already been taken there, S means there is a ship there that has not yet been shot
   override def toString(): String = {
     var result = ""
     for(i <- 0 until this.DIMENSION) {
@@ -71,7 +71,6 @@ class BoardController @Inject()(cc: ControllerComponents) extends AbstractContro
     return result
   }
 
-  //
   def printBoard() = Action {Ok(this.toString())}
 
   def attack(x: Int, y: Int) = Action {
