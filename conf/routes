@@ -11,3 +11,12 @@ GET     /message                    controllers.AsyncController.message
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
+
+# attack at coord (x,y)
+GET     /attack/:x/:y               controllers.BoardController.attack(x:Int, y:Int)
+
+# place a ship
+GET    /addShip/:size/:startX/:startY/:vertical  controllers.BoardController.addShip(size: Int, startX: Int, startY: Int, vertical: Boolean)
+
+# clear board
+GET /clearBoard                     controllers.BoardController.clearBoard()
